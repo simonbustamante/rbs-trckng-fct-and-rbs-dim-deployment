@@ -1,0 +1,127 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Parallel - rbs-dim-trckng-fct - all countries",
+    "States": {
+      "Parallel - rbs-dim-trckng-fct - all countries": {
+        "Type": "Parallel",
+        "Next": "Start - crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct",
+        "Branches": [
+          {
+            "StartAt": "glu_hq_ntwrk_hn_rbs_dim_to_rbs_trckng_fct_prd_001",
+            "States": {
+              "glu_hq_ntwrk_hn_rbs_dim_to_rbs_trckng_fct_prd_001": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "glu_hq_ntwrk_hn_rbs_dim_to_rbs_trckng_fct_prd_001"
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "glu_hq_ntwrk_gt_rbs_dim_to_rbs_trckng_fct_prd_001",
+            "States": {
+              "glu_hq_ntwrk_gt_rbs_dim_to_rbs_trckng_fct_prd_001": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "glu_hq_ntwrk_gt_rbs_dim_to_rbs_trckng_fct_prd_001"
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "glu_hq_ntwrk_bo_rbs_dim_to_rbs_trckng_fct_prd_001",
+            "States": {
+              "glu_hq_ntwrk_bo_rbs_dim_to_rbs_trckng_fct_prd_001": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "glu_hq_ntwrk_bo_rbs_dim_to_rbs_trckng_fct_prd_001"
+                },
+                "End": true
+              }
+            }
+          }
+        ]
+      },
+      "Start - crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Get - crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct"
+      },
+      "Get - crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+        "Next": "Choice"
+      },
+      "Choice": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.Crawler.State",
+            "StringEquals": "RUNNING",
+            "Next": "Wait for crwlr rbs trckng fct"
+          }
+        ],
+        "Default": "glu_hq_ntwrk_rbs_dim_prd"
+      },
+      "Wait for crwlr rbs trckng fct": {
+        "Type": "Wait",
+        "Seconds": 5,
+        "Next": "Get - crwl-hq-anl-prd-ntwrk-zeus-rbs-trckng-fct"
+      },
+      "glu_hq_ntwrk_rbs_dim_prd": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "glu_hq_ntwrk_rbs_dim_prd"
+        },
+        "Next": "Start - crwl-hq-anl-prd-zeus-rbs-dim"
+      },
+      "Start - crwl-hq-anl-prd-zeus-rbs-dim": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "crwl-hq-anl-prd-zeus-rbs-dim"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Get - crwl-hq-anl-prd-zeus-rbs-dim"
+      },
+      "Get - crwl-hq-anl-prd-zeus-rbs-dim": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "crwl-hq-anl-prd-zeus-rbs-dim"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+        "Next": "Choice - Crawler Rbs Dim Status"
+      },
+      "Choice - Crawler Rbs Dim Status": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.Crawler.State",
+            "StringEquals": "RUNNING",
+            "Next": "Wait - Crwlr Rbs Dim Status"
+          }
+        ],
+        "Default": "Pass"
+      },
+      "Wait - Crwlr Rbs Dim Status": {
+        "Type": "Wait",
+        "Seconds": 5,
+        "Next": "Get - crwl-hq-anl-prd-zeus-rbs-dim"
+      },
+      "Pass": {
+        "Type": "Pass",
+        "End": true
+      }
+    }
+  }
