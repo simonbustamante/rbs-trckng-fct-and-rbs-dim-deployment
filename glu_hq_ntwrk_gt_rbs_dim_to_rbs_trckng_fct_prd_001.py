@@ -148,8 +148,8 @@ def bulkDataLoadGT():
     dfCntryDim = getFromBucket(dim_bucket, zeus_cntry_dim)
 
     ## CARGA MASIVA
-    start_date = datetime(2023, 10, 7).date()  # Se agrega .date() para obtener solo la fecha
-    end_date = datetime(2023, 11, 13).date()  # De igual forma aquí
+    start_date = datetime(2023, 8, 24).date()  # Se agrega .date() para obtener solo la fecha
+    end_date = datetime(2023, 12, 13).date()  # De igual forma aquí
     currentDate = start_date
     while currentDate <= end_date:
         #print(current_date)
@@ -179,7 +179,7 @@ def bulkDataLoadGT():
                 )
             df = df.withColumnRenamed("CountryCode","CNTRY_CD")
             df = df.withColumn("BTCH_KEY",lit("empty"))
-            df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+            df = df.withColumn("PPN_DT", lit(currentDate))
             df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
             #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
             #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))
@@ -261,7 +261,7 @@ def run():
             )
         df = df.withColumnRenamed("CountryCode","CNTRY_CD")
         df = df.withColumn("BTCH_KEY",lit("empty"))
-        df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+        df = df.withColumn("PPN_DT", lit(getCurrentDate()))
         df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
         #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
         #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))

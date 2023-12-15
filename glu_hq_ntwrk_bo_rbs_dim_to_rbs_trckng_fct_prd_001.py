@@ -126,7 +126,7 @@ def getCCRbsDimFromArray():
 def readFromCatalog(DB,TBL):
     dyf = glueContext.create_dynamic_frame.from_catalog(database=DB, table_name=TBL)
     return dyf
-
+    
 def writeOnBucket(df,PART1,PART2,MODE):
     df.write.mode(MODE).partitionBy(PART1,PART2).parquet("s3a://"+str(bucket_dim)+"/"+str(rbs_trckng_fct))
     return "saved"
@@ -193,14 +193,12 @@ def bulkDataLoad():
     #dfCntryDim = getFromBucket(dim_bucket, cntry_dim)
     ## CARGA MASIVA
     
-    start_date = datetime(2023,11, 13).date()  # Se agrega .date() para obtener solo la fecha
-    end_date = datetime(2023, 11, 21).date()  # De igual forma aquí
+    start_date = datetime(2023,11, 21).date()  # Se agrega .date() para obtener solo la fecha
+    end_date = datetime(2023, 12, 13).date()  # De igual forma aquí
     currentDate = start_date
     
-    for conn in getCCRbsDimFromArray():
-        
-        
-        while currentDate <= end_date:
+    while currentDate <= end_date:
+        for conn in getCCRbsDimFromArray():
             #print(current_date)
             dyf = readFromCatalog(conn[0], conn[1])
             df = dyf.toDF().distinct()
@@ -224,7 +222,7 @@ def bulkDataLoad():
                 )
             df = df.withColumnRenamed("CountryCode","CNTRY_CD")
             df = df.withColumn("BTCH_KEY",lit("empty"))
-            df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+            df = df.withColumn("PPN_DT", lit(currentDate))
             df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
             #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
             #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))
@@ -303,7 +301,7 @@ def run():
             )
         df = df.withColumnRenamed("CountryCode","CNTRY_CD")
         df = df.withColumn("BTCH_KEY",lit("empty"))
-        df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+        df = df.withColumn("PPN_DT", lit(getCurrentDate()))
         df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
         #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
         #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))
@@ -350,6 +348,8 @@ def run():
         msg = insertIntoRbsTrckgFct(df,"DatePartKey","CNTRY_CD","append")
 
 run()
+
+
     
 job.commit()
 

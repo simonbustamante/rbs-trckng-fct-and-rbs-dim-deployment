@@ -182,8 +182,8 @@ def bulkDataLoad():
     #dfCntryDim.show(5)
     #dfCntryDim = getFromBucket(dim_bucket, cntry_dim)
     ## CARGA MASIVA
-    start_date = datetime(2023, 11, 15).date()  # Se agrega .date() para obtener solo la fecha
-    end_date = datetime(2023, 11, 15).date()  # De igual forma aquí
+    start_date = datetime(2023, 11, 19).date()  # Se agrega .date() para obtener solo la fecha
+    end_date = datetime(2023, 12, 13).date()  # De igual forma aquí
     currentDate = start_date
     while currentDate <= end_date:
         #print(current_date)
@@ -214,7 +214,7 @@ def bulkDataLoad():
                 )
             df = df.withColumnRenamed("CountryCode","CNTRY_CD")
             df = df.withColumn("BTCH_KEY",lit("empty"))
-            df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+            df = df.withColumn("PPN_DT", lit(currentDate))
             df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
             #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
             #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))
@@ -296,7 +296,7 @@ def run():
             )
         df = df.withColumnRenamed("CountryCode","CNTRY_CD")
         df = df.withColumn("BTCH_KEY",lit("empty"))
-        df = df.withColumn("PPN_DT", lit(getCurrentDate() + timedelta(days=1)))
+        df = df.withColumn("PPN_DT", lit(getCurrentDate()))
         df = df.crossJoin(dfStmDim.filter(col("SRC_STM_NM")==lit("AWS")).select("SRC_STM_KEY"))
         #new_id = insertIntoSrcObjKey(conn[1],conn[0],conn[2])
         #df = df.withColumn("SRC_OBJ_KEY",lit(new_id))

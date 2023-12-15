@@ -214,7 +214,7 @@ def run():
         rbs_trckg_fct = rbs_trckg_fct.withColumn("INCREMENTAL", sum("hash_change").over(window_spec_cumsum))
         
         #currentDate = getCurrentDate()
-        currentDate = getCurrentDate() #- timedelta(days=1) # data del dia anterior
+        currentDate = getCurrentDate() - timedelta(days=1) # data del dia anterior
         #currentDate = datetime.strptime("2023-08-22", "%Y-%m-%d").date()
         #currentLessOne = currentDate - timedelta(days=1)
         
